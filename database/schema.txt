@@ -1,0 +1,168 @@
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `email` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `phone` varchar(20) DEFAULT NULL,
+  `job_title` varchar(255) DEFAULT NULL,
+  `company` varchar(255) DEFAULT NULL,
+  `user_type` enum('agent','renter') NOT NULL,
+  PRIMARY KEY (`email`)
+) ;
+
+
+DROP TABLE IF EXISTS `addresses`;
+CREATE TABLE `addresses` (
+  `address_id` varchar(255) NOT NULL,
+  `user_email` varchar(255) NOT NULL,
+  `street` varchar(255) NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `state` varchar(255) NOT NULL,
+  `zip` varchar(20) NOT NULL,
+  PRIMARY KEY (`address_id`),
+  KEY `user_email` (`user_email`),
+  CONSTRAINT `addresses_ibfk_1` FOREIGN KEY (`user_email`) REFERENCES `users` (`email`) ON DELETE CASCADE) ;
+
+
+DROP TABLE IF EXISTS `bookings`;
+CREATE TABLE `bookings` (
+  `bid` varchar(255) NOT NULL,
+  `pid` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `card_id` varchar(255) NOT NULL,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `price` int NOT NULL,
+  `status` enum('booked','cancelled') NOT NULL,
+  `owner_email` varchar(255) NOT NULL,
+  PRIMARY KEY (`bid`),
+  KEY `pid` (`pid`),
+  KEY `email` (`email`),
+  KEY `card_id` (`card_id`),
+  KEY `ix_bookings_bid` (`bid`),
+  CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `properties` (`pid`),
+  CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`email`) REFERENCES `users` (`email`),
+  CONSTRAINT `bookings_ibfk_3` FOREIGN KEY (`card_id`) REFERENCES `credit_cards` (`card_id`)
+) ;
+
+
+DROP TABLE IF EXISTS `credit_cards`;
+CREATE TABLE `credit_cards` (
+  `card_id` varchar(255) NOT NULL,
+  `user_email` varchar(255) NOT NULL,
+  `number` varchar(20) NOT NULL,
+  `expiry` date NOT NULL,
+  `billing_address_id` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`card_id`),
+  KEY `user_email` (`user_email`),
+  KEY `billing_address_id` (`billing_address_id`),
+  CONSTRAINT `credit_cards_ibfk_1` FOREIGN KEY (`user_email`) REFERENCES `users` (`email`) ON DELETE CASCADE,
+  CONSTRAINT `credit_cards_ibfk_2` FOREIGN KEY (`billing_address_id`) REFERENCES `addresses` (`address_id`) ON DELETE SET NULL
+) ;
+
+
+DROP TABLE IF EXISTS `properties`;
+CREATE TABLE `properties` (
+  `pid` varchar(255) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(255) NOT NULL,
+  `description` varchar(500) DEFAULT NULL,
+  `street` varchar(255) NOT NULL,
+  `city` varchar(255) NOT NULL,
+  `state` varchar(255) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `zip_code` varchar(20) NOT NULL,
+  `property_type` varchar(255) DEFAULT NULL,
+  `listing_type` varchar(255) DEFAULT NULL,
+  `price` int NOT NULL,
+  `rooms` int DEFAULT NULL,
+  `square_feet` int DEFAULT NULL,
+  `year_built` int DEFAULT NULL,
+  `additional_info` json DEFAULT NULL,
+  `property_image_url` varchar(500) DEFAULT NULL,
+  `available` tinyint(1) DEFAULT NULL,
+  `owner_email` varchar(255) NOT NULL,
+  `start_date` date DEFAULT NULL,
+  `end_date` date DEFAULT NULL,
+  PRIMARY KEY (`pid`),
+  KEY `ix_properties_pid` (`pid`)
+) ;
+
+
+DROP TABLE IF EXISTS `renter_preferences`;
+CREATE TABLE `renter_preferences` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_email` varchar(255) NOT NULL,
+  `move_in_start` date DEFAULT NULL,
+  `move_in_end` date DEFAULT NULL,
+  `preferred_city` varchar(255) DEFAULT NULL,
+  `preferred_state` varchar(255) DEFAULT NULL,
+  `budget_min` decimal(10,2) DEFAULT NULL,
+  `budget_max` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_email` (`user_email`),
+  CONSTRAINT `renter_preferences_ibfk_1` FOREIGN KEY (`user_email`) REFERENCES `users` (`email`) ON DELETE CASCADE
+) ;
+
+
+DROP TABLE IF EXISTS ` Neighbourhood `;
+CREATE TABLE Neighbourhood (
+    neighbourhood_id SERIAL PRIMARY KEY,
+    name VARCHAR(100),
+    nearby_schools TEXT,
+    crime_rate DECIMAL(5,2)
+);
+
+
+DROP TABLE IF EXISTS `RewardProgram`;
+ CREATE TABLE RewardProgram (
+    reward_id SERIAL PRIMARY KEY,
+    email VARCHAR(100),
+    reward_points INTEGER DEFAULT 0,
+    FOREIGN KEY (email) REFERENCES renter_preferences(user_email)
+);
+
+
+DROP TABLE IF EXISTS `House`;
+CREATE TABLE House (
+    property_id INTEGER PRIMARY KEY,
+    square_footage INTEGER,
+    FOREIGN KEY (property_id) REFERENCES properties(pid)
+);
+
+
+DROP TABLE IF EXISTS ‘Apartment`;
+CREATE TABLE Apartment (
+    property_id INTEGER PRIMARY KEY,
+    number_of_rooms INTEGER,
+    square_footage INTEGER,
+    building_type VARCHAR(50),
+    FOREIGN KEY (property_id) REFERENCES properties(pid)
+);
+
+DROP TABLE IF EXISTS `Land `;
+CREATE TABLE Land (
+    property_id INTEGER PRIMARY KEY,
+    FOREIGN KEY (property_id) REFERENCES properties(pid)
+);
+
+
+DROP TABLE IF EXISTS ` VacationHome `;
+CREATE TABLE VacationHome (
+    property_id INTEGER PRIMARY KEY,
+    seasonal_availability VARCHAR(100),
+    amenities TEXT,
+    FOREIGN KEY (property_id) REFERENCES properties(pid)
+);
+
+
+DROP TABLE IF EXISTS ` CommercialBuilding `;
+CREATE TABLE CommercialBuilding (
+    property_id INTEGER PRIMARY KEY,
+    square_footage INTEGER,
+    business_type VARCHAR(50),
+    FOREIGN KEY (property_id) REFERENCES property(pid)
+);
+
+
+
